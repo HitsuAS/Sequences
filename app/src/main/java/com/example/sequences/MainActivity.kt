@@ -3,6 +3,9 @@ package com.example.sequences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,7 +76,7 @@ fun SequencesGame(modifier: Modifier = Modifier) {
                     quantity = quantityInput.toInt()
                     currentPage++
                 },
-                validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 1}
+                validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 0}
             )
             1 -> QuestionsScreen(
                 quantity = quantity,
@@ -118,8 +121,11 @@ fun WelcomeAndChooseQuantityScreen(
             ),
             keyboardActions = KeyboardActions(onDone = { onContinueClick() }),
             isError = !isValid,
-            supportingText = { Text(text = "Invalid Input") }
+            supportingText = { if(!isValid) Text(text = "Invalid Input. Value must be greater than 0") }
         )
+        Button(onClick = onContinueClick) {
+            Text(text = "Continue")
+        }
     }
 }
 
@@ -141,12 +147,11 @@ fun QuestionsScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Question ${questionNum + 1}/$quantity")
-        Spacer(modifier = Modifier.weight(1f))
         when (isChosen) {
             false -> ChooseDifficultyScreen(
                 value = difficultyInput,
                 onValueChange = { difficultyInput = it },
-                validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 3 },
+                validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 2 },
                 onClick = {
                     difficulty = difficultyInput.toInt()
                     QuestionsAndAnswersStorage.questions.add(Question(difficulty = difficulty))
@@ -194,11 +199,10 @@ fun ChooseDifficultyScreen(
         ),
         keyboardActions = KeyboardActions(onDone = { onStartClick() }),
         isError = !isValid,
-        supportingText = { Text(text = "Invalid Input. Value should be greater than 3") }
+        supportingText = { if(!isValid) Text(text = "Invalid Input. Value should be greater than 2") }
     )
-    Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = onStartClick) {
-        Text(text = "Submit")
+        Text(text = "Start")
     }
 }
 
@@ -240,7 +244,6 @@ fun QuestionScreen(
         modifier = Modifier.horizontalScroll(scrollState)
     )
     if(isScrollable) Text(text = "The sequence is scrollable")
-    Spacer(modifier = Modifier.height(40.dp))
     OutlinedTextField(
         label = { Text(text = "Answer") },
         value = answerInput,
@@ -252,10 +255,9 @@ fun QuestionScreen(
         ),
         keyboardActions = KeyboardActions(onDone = { onSubmitClick() }),
         isError = !isValid,
-        supportingText = { Text(text = "Invalid Input. Value should be 0 or greater") },
+        supportingText = { if(!isValid) Text(text = "Invalid Input. Value should be 0 or greater") },
         enabled = !isAnswered
     )
-    Spacer(modifier = Modifier.height(12.dp))
     if(!isAnswered) {
         Button(onClick = onSubmitClick) {
             Text(text = "Submit")
@@ -297,10 +299,25 @@ fun QuestionResultCard(
     val scrollState = rememberScrollState()
     val isScrollable = scrollState.canScrollForward || scrollState.canScrollBackward
 
-    Card {
-        Row {
-            Column {
-                Text(text = "Question $questionNum:")
+    Card(
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(12.dp)
+            ) {
+                Text(text = "Question ${questionNum + 1}")
                 if (isExpanded) {
                     Text(text = "${question.questionType} Numbers:")
                     Text(
