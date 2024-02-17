@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -25,6 +26,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.sequences.model.Question
+import com.example.sequences.model.QuestionsAndAnswersStorage
 import com.example.sequences.ui.theme.SequencesTheme
 
 class MainActivity : ComponentActivity() {
@@ -74,7 +77,7 @@ fun WelcomeAndChooseQuantityScreen(
 ) {
     var isValid by remember { mutableStateOf(true) }
 
-    val onContinueClicked = {
+    val onContinueClick = {
         isValid = validateQuantity()
         if (isValid) onClick()
     }
@@ -96,7 +99,7 @@ fun WelcomeAndChooseQuantityScreen(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
             ),
-            keyboardActions = KeyboardActions(onDone = { onContinueClicked() }),
+            keyboardActions = KeyboardActions(onDone = { onContinueClick() }),
             isError = !isValid,
             supportingText = { Text(text = "Invalid Input") }
         )
@@ -112,6 +115,8 @@ fun QuestionsScreen(
 
     var isChosen by remember { mutableStateOf(false) }
 
+    var difficultyInput by remember { mutableStateOf("") }
+    var difficulty = 0
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -121,9 +126,52 @@ fun QuestionsScreen(
         Text(text = "Question ${questionNum + 1}/$quantity")
         Spacer(modifier = Modifier.weight(1f))
         when (isChosen) {
-            false -> {}
+            false -> ChooseDifficultyScreen(
+                value = difficultyInput,
+                onValueChange = { difficultyInput = it },
+                validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 3 },
+                onClick = {
+                    difficulty = difficultyInput.toInt()
+                    QuestionsAndAnswersStorage.questions.add(Question(difficulty = difficulty))
+                    isChosen = true
+                }
+            )
             true -> {}
         }
+    }
+}
+
+@Composable
+fun ChooseDifficultyScreen(
+    value: String,
+    onValueChange: (String) -> Unit,
+    validateDifficulty: () -> Boolean,
+    onClick: () -> Unit
+) {
+    var isValid by remember { mutableStateOf(true) }
+
+    val onStartClick = {
+        isValid = validateDifficulty()
+        if(isValid) onClick()
+    }
+
+    Text(text = "Choose difficulty (The length of the sequence):")
+    OutlinedTextField(
+        label = { Text(text = "Difficulty") },
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(onDone = { onStartClick() }),
+        isError = !isValid,
+        supportingText = { Text(text = "Invalid Input. Value should be greater than 3") }
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Button(onClick = onStartClick) {
+        Text(text = "Submit")
     }
 }
 
