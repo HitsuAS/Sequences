@@ -152,7 +152,7 @@ fun QuestionsScreen(
             true -> QuestionScreen(
                 question = QuestionsAndAnswersStorage.questions[questionNum],
                 isLastQuestion = questionNum == quantity - 1,
-                onNextQuestionClick = {
+                onNextClick = {
                     questionNum++
                     difficultyInput = ""
                     difficulty = 0
@@ -202,7 +202,7 @@ fun ChooseDifficultyScreen(
 fun QuestionScreen(
     question: Question,
     isLastQuestion: Boolean,
-    onNextQuestionClick: () -> Unit,
+    onNextClick: () -> Unit,
     onShowResultsClick: () -> Unit
 ) {
     var answerInput by remember { mutableStateOf("") }
@@ -222,6 +222,12 @@ fun QuestionScreen(
             isAnswered = true
             QuestionsAndAnswersStorage.answers.add(answer)
         }
+    }
+
+    val onNextQuestionClick = {
+        onNextClick()
+        answerInput = ""
+        answer = 0
     }
 
     Text(text = "How many ${question.questionType} numbers in this sequence?")
@@ -253,20 +259,12 @@ fun QuestionScreen(
     } else {
         Text(text = "The answer is: ${question.answer}")
         Spacer(modifier = Modifier.height(8.dp))
-        if(!isLastQuestion) {
-            Button(
-                onClick = {
-                    onNextQuestionClick()
-                    answerInput = ""
-                    answer = 0
-                }
-            ) {
-                Text(text = "Next Question")
-            }
-        } else {
-            Button(onClick = onShowResultsClick) {
-                Text(text = "Show Results")
-            }
+        Button(
+            onClick = if(isLastQuestion) onShowResultsClick else onNextQuestionClick
+        ) {
+            Text(
+                text = if (isLastQuestion) "Show Results" else "Next Question"
+            )
         }
     }
 }
@@ -293,7 +291,7 @@ fun QuestionResultCard(
                     )
                     if(isScrollable) Text(text = "The sequence is scrollable")
                     Text(text = "Your answer is: ${QuestionsAndAnswersStorage.answers[questionNum]}")
-                    Text(text = "The asnwer is: ${question.answer}")
+                    Text(text = "The answer is: ${question.answer}")
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
