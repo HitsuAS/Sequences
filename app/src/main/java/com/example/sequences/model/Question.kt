@@ -5,6 +5,7 @@ import kotlin.math.sqrt
 data class Question(val difficulty: Int) {
 
     val questionSequence: String = buildString {
+        append('~')
         repeat (difficulty) {
             when ((0..2).random()) {
                 0 -> append(('0'..'9').random())
@@ -12,6 +13,7 @@ data class Question(val difficulty: Int) {
                 2 -> append(('A'..'Z').random())
             }
         }
+        append('~')
     }
 
     val questionType: QuestionType = when ((0..2).random()) {
@@ -26,27 +28,16 @@ data class Question(val difficulty: Int) {
         var currentNum = ""
 
         questionSequence.forEach { char ->
-
             if (char in '0'..'9') currentNum += char
             else if (currentNum != "") {
                 when(questionType) {
                     QuestionType.EVEN -> if (currentNum.toInt().isEven()) answer++
                     QuestionType.ODD -> if (currentNum.toInt().isOdd()) answer++
-                    QuestionType.PRIME -> if (currentNum.toInt().isOdd()) answer++
+                    QuestionType.PRIME -> if (currentNum.toInt().isPrime()) answer++
                 }
                 currentNum = ""
             }
-
-            if (currentNum != "") {
-                when (questionType) {
-                    QuestionType.EVEN -> if (currentNum.toInt().isEven()) answer++
-                    QuestionType.ODD -> if (currentNum.toInt().isOdd()) answer++
-                    QuestionType.PRIME -> if (currentNum.toInt().isOdd()) answer++
-                }
-            }
-
         }
-
     }
 }
 
