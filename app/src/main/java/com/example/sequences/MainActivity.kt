@@ -6,19 +6,27 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,13 +53,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SequencesGame(modifier: Modifier = Modifier) {
-    var currentPage by remember { mutableStateOf(0) }
+    var currentPage by remember { mutableIntStateOf(0) }
 
     var quantityInput by remember { mutableStateOf("") }
     var quantity = 0
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         when (currentPage) {
@@ -116,12 +124,12 @@ fun QuestionsScreen(
     quantity: Int,
     onShowResultsClick: () -> Unit
 ) {
-    var questionNum by remember { mutableStateOf(0) }
+    var questionNum by remember { mutableIntStateOf(0) }
 
     var isChosen by remember { mutableStateOf(false) }
 
     var difficultyInput by remember { mutableStateOf("") }
-    var difficulty = 0
+    var difficulty: Int
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -198,7 +206,7 @@ fun QuestionScreen(
     onShowResultsClick: () -> Unit
 ) {
     var answerInput by remember { mutableStateOf("") }
-    var answer = 0
+    var answer: Int
 
     var isValid by remember { mutableStateOf(true) }
 
@@ -258,6 +266,42 @@ fun QuestionScreen(
         } else {
             Button(onClick = onShowResultsClick) {
                 Text(text = "Show Results")
+            }
+        }
+    }
+}
+
+@Composable
+fun QuestionResultCard(
+    question: Question,
+    questionNum: Int
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    val scrollState = rememberScrollState()
+    val isScrollable = scrollState.canScrollForward || scrollState.canScrollBackward
+
+    Card {
+        Row {
+            Column {
+                Text(text = "Question $questionNum:")
+                if (isExpanded) {
+                    Text(text = "${question.questionType} Numbers:")
+                    Text(
+                        text = question.questionSequence,
+                        modifier = Modifier.horizontalScroll(scrollState)
+                    )
+                    if(isScrollable) Text(text = "The sequence is scrollable")
+                    Text(text = "Your answer is: ${QuestionsAndAnswersStorage.answers[questionNum]}")
+                    Text(text = "The asnwer is: ${question.answer}")
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = { isExpanded = !isExpanded }) {
+                Icon(
+                    imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (isExpanded) "Show less" else "Show more"
+                )
             }
         }
     }
