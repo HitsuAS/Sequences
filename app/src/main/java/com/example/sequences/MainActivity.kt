@@ -48,7 +48,7 @@ fun SequencesGame(modifier: Modifier = Modifier) {
     var currentPage by remember { mutableStateOf(0) }
 
     var quantityInput by remember { mutableStateOf("") }
-    var questionsQuantity = 0
+    var quantity = 0
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -59,12 +59,15 @@ fun SequencesGame(modifier: Modifier = Modifier) {
                 value = quantityInput,
                 onValueChange = { quantityInput = it },
                 onClick = {
-                    questionsQuantity = quantityInput.toInt()
+                    quantity = quantityInput.toInt()
                     currentPage++
                 },
                 validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 1}
             )
-
+            1 -> QuestionsScreen(
+                quantity = quantity,
+                onShowResultsClick = { currentPage++ }
+            )
         }
     }
 }
