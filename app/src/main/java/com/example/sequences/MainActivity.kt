@@ -3,11 +3,13 @@ package com.example.sequences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -136,7 +138,17 @@ fun QuestionsScreen(
                     isChosen = true
                 }
             )
-            true -> {}
+            true -> QuestionScreen(
+                question = QuestionsAndAnswersStorage.questions[questionNum],
+                isLastQuestion = questionNum == quantity - 1,
+                onNextQuestionClick = {
+                    questionNum++
+                    difficultyInput = ""
+                    difficulty = 0
+                    isChosen = false
+                },
+                onShowResultsClick = onShowResultsClick
+            )
         }
     }
 }
@@ -172,6 +184,79 @@ fun ChooseDifficultyScreen(
     Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = onStartClick) {
         Text(text = "Submit")
+    }
+}
+
+@Composable
+fun QuestionScreen(
+    question: Question,
+    isLastQuestion: Boolean,
+    onNextQuestionClick: () -> Unit,
+    onShowResultsClick: () -> Unit
+) {
+    var answerInput by remember { mutableStateOf("") }
+    var answer = 0
+
+    var isValid by remember { mutableStateOf(true) }
+
+    val scrollState = rememberScrollState()
+    val isScrollable = scrollState.canScrollForward || scrollState.canScrollBackward
+
+    var isAnswered by remember { mutableStateOf(false) }
+
+    val onSubmitClick = {
+        isValid = (answerInput.toIntOrNull() != null && answerInput.toInt() > -1)
+        if(isValid) {
+            answer = answerInput.toInt()
+            isAnswered = true
+            QuestionsAndAnswersStorage.answers.add(answer)
+        }
+    }
+
+    Text(text = "How many ${question.questionType} numbers in this sequence?")
+    Text(
+        text = question.questionSequence,
+        modifier = Modifier.horizontalScroll(scrollState)
+    )
+    if(isScrollable) Text(text = "The sequence is scrollable")
+    Spacer(modifier = Modifier.height(40.dp))
+    OutlinedTextField(
+        label = { Text(text = "Answer") },
+        value = answerInput,
+        onValueChange = { answerInput = it },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(onDone = { onSubmitClick() }),
+        isError = !isValid,
+        supportingText = { Text(text = "Invalid Input. Value should be 0 or greater") },
+        enabled = !isAnswered
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    if(!isAnswered) {
+        Button(onClick = onSubmitClick) {
+            Text(text = "Submit")
+        }
+    } else {
+        Text(text = "The answer is: ${question.answer}")
+        Spacer(modifier = Modifier.height(8.dp))
+        if(!isLastQuestion) {
+            Button(
+                onClick = {
+                    onNextQuestionClick()
+                    answerInput = ""
+                    answer = 0
+                }
+            ) {
+                Text(text = "Next Question")
+            }
+        } else {
+            Button(onClick = onShowResultsClick) {
+                Text(text = "Show Results")
+            }
+        }
     }
 }
 
