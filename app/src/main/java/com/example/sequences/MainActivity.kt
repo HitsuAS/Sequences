@@ -103,6 +103,30 @@ fun WelcomeAndChooseQuantityScreen(
     }
 }
 
+@Composable
+fun QuestionsScreen(
+    quantity: Int,
+    onShowResultsClick: () -> Unit
+) {
+    var questionNum by remember { mutableStateOf(0) }
+
+    var isChosen by remember { mutableStateOf(false) }
+
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Question ${questionNum + 1}/$quantity")
+        Spacer(modifier = Modifier.weight(1f))
+        when (isChosen) {
+            false -> {}
+            true -> {}
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SequencesGamePreview() {
