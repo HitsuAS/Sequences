@@ -24,10 +24,13 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,27 +67,49 @@ fun SequencesGame(modifier: Modifier = Modifier) {
     var quantityInput by remember { mutableStateOf("") }
     var quantity = 0
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            SequencesTopAppBar(
+                label = when(currentPage) {
+                    0 -> "Sequences"
+                    1 -> "Questions"
+                    else -> "Results"
+                }
+            )
+        }
     ) {
-        when (currentPage) {
-            0 -> WelcomeAndChooseQuantityScreen(
-                value = quantityInput,
-                onValueChange = { quantityInput = it },
-                onClick = {
-                    quantity = quantityInput.toInt()
-                    currentPage++
-                },
-                validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 0}
-            )
-            1 -> QuestionsScreen(
-                quantity = quantity,
-                onShowResultsClick = { currentPage++ }
-            )
-            2 -> ResultsScreen()
+        Surface(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(it),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            when (currentPage) {
+                0 -> WelcomeAndChooseQuantityScreen(
+                    value = quantityInput,
+                    onValueChange = { quantityInput = it },
+                    onClick = {
+                        quantity = quantityInput.toInt()
+                        currentPage++
+                    },
+                    validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 0 }
+                )
+
+                1 -> QuestionsScreen(
+                    quantity = quantity,
+                    onShowResultsClick = { currentPage++ }
+                )
+
+                2 -> ResultsScreen()
+            }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SequencesTopAppBar(label: String) {
+    CenterAlignedTopAppBar(title = { Text(text = label) })
 }
 
 @Composable
