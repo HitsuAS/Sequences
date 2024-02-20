@@ -67,12 +67,14 @@ fun SequencesGame(modifier: Modifier = Modifier) {
     var quantityInput by remember { mutableStateOf("") }
     var quantity = 0
 
+    var questionNum by remember { mutableIntStateOf(0) }
+
     Scaffold(
         topBar = {
             SequencesTopAppBar(
                 label = when(currentPage) {
                     0 -> "Sequences"
-                    1 -> "Questions"
+                    1 -> "Question ${questionNum + 1}/$quantity"
                     else -> "Results"
                 }
             )
@@ -97,6 +99,8 @@ fun SequencesGame(modifier: Modifier = Modifier) {
 
                 1 -> QuestionsScreen(
                     quantity = quantity,
+                    questionNum = questionNum,
+                    questionNumAdd = { questionNum++ },
                     onShowResultsClick = { currentPage++ }
                 )
 
@@ -157,10 +161,10 @@ fun WelcomeAndChooseQuantityScreen(
 @Composable
 fun QuestionsScreen(
     quantity: Int,
+    questionNum: Int,
+    questionNumAdd: () -> Unit,
     onShowResultsClick: () -> Unit
 ) {
-    var questionNum by remember { mutableIntStateOf(0) }
-
     var isChosen by remember { mutableStateOf(false) }
 
     var difficultyInput by remember { mutableStateOf("") }
@@ -187,7 +191,7 @@ fun QuestionsScreen(
                 question = QuestionsAndAnswersStorage.questions[questionNum],
                 isLastQuestion = questionNum == quantity - 1,
                 onNextClick = {
-                    questionNum++
+                    questionNumAdd()
                     difficultyInput = ""
                     difficulty = 0
                     isChosen = false
