@@ -1,6 +1,6 @@
 package com.example.sequences.model
 
-object QuestionsAndAnswersStorage {
+object Storage {
     val questions: MutableList<Question> = mutableListOf()
     val answers: MutableList<Int> = mutableListOf()
 }

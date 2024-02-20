@@ -46,7 +46,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sequences.model.Question
-import com.example.sequences.model.QuestionsAndAnswersStorage
+import com.example.sequences.model.Storage
 import com.example.sequences.ui.theme.SequencesTheme
 
 class MainActivity : ComponentActivity() {
@@ -183,12 +183,12 @@ fun QuestionsScreen(
                 validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 2 },
                 onClick = {
                     difficulty = difficultyInput.toInt()
-                    QuestionsAndAnswersStorage.questions.add(Question(difficulty = difficulty))
+                    Storage.questions.add(Question(difficulty = difficulty))
                     isChosen = true
                 }
             )
             true -> QuestionScreen(
-                question = QuestionsAndAnswersStorage.questions[questionNum],
+                question = Storage.questions[questionNum],
                 isLastQuestion = questionNum == quantity - 1,
                 onNextClick = {
                     questionNumAdd()
@@ -257,7 +257,7 @@ fun QuestionScreen(
         if(isValid) {
             answer = answerInput.toInt()
             isAnswered = true
-            QuestionsAndAnswersStorage.answers.add(answer)
+            Storage.answers.add(answer)
         }
     }
 
@@ -311,7 +311,7 @@ fun ResultsScreen() {
     LazyColumn(
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        items(QuestionsAndAnswersStorage.questions) {question ->
+        items(Storage.questions) {question ->
             QuestionResultCard(question = question, questionNum = questionNum)
             questionNum++
         }
@@ -354,7 +354,7 @@ fun QuestionResultCard(
                         modifier = Modifier.horizontalScroll(scrollState)
                     )
                     if(isScrollable) Text(text = "The sequence is scrollable")
-                    Text(text = "Your answer is: ${QuestionsAndAnswersStorage.answers[questionNum]}")
+                    Text(text = "Your answer is: ${Storage.answers[questionNum]}")
                     Text(text = "The answer is: ${question.answer}")
                 }
             }
