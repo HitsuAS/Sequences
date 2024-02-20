@@ -79,11 +79,11 @@ fun SequencesGame(modifier: Modifier = Modifier) {
                 }
             )
         }
-    ) {
+    ) {contentPadding ->
         Surface(
             modifier = modifier
                 .fillMaxSize()
-                .padding(it),
+                .padding(contentPadding),
             color = MaterialTheme.colorScheme.background
         ) {
             when (currentPage) {
@@ -175,7 +175,6 @@ fun QuestionsScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Question ${questionNum + 1}/$quantity")
         when (isChosen) {
             false -> ChooseDifficultyScreen(
                 value = difficultyInput,
@@ -183,7 +182,7 @@ fun QuestionsScreen(
                 validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 2 },
                 onClick = {
                     difficulty = difficultyInput.toInt()
-                    Storage.questions.add(Question(difficulty = difficulty))
+                    Storage.questions.add(Question(difficulty = difficulty, questionNum = questionNum))
                     isChosen = true
                 }
             )
@@ -306,23 +305,18 @@ fun QuestionScreen(
 
 @Composable
 fun ResultsScreen() {
-    var questionNum = 0
 
     LazyColumn(
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
         items(Storage.questions) {question ->
-            QuestionResultCard(question = question, questionNum = questionNum)
-            questionNum++
+            QuestionResultCard(question = question)
         }
     }
 }
 
 @Composable
-fun QuestionResultCard(
-    question: Question,
-    questionNum: Int
-) {
+fun QuestionResultCard(question: Question) {
     var isExpanded by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
@@ -346,7 +340,7 @@ fun QuestionResultCard(
                     .weight(1f)
                     .padding(12.dp)
             ) {
-                Text(text = "Question ${questionNum + 1}")
+                Text(text = "Question ${question.questionNum + 1}")
                 if (isExpanded) {
                     Text(text = "${question.questionType} Numbers:")
                     Text(
@@ -354,7 +348,7 @@ fun QuestionResultCard(
                         modifier = Modifier.horizontalScroll(scrollState)
                     )
                     if(isScrollable) Text(text = "The sequence is scrollable")
-                    Text(text = "Your answer is: ${Storage.answers[questionNum]}")
+                    Text(text = "Your answer is: ${Storage.answers[question.questionNum]}")
                     Text(text = "The answer is: ${question.answer}")
                 }
             }

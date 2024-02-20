@@ -2,7 +2,7 @@ package com.example.sequences.model
 
 import kotlin.math.sqrt
 
-data class Question(val difficulty: Int) {
+data class Question(val difficulty: Int, val questionNum: Int) {
 
     val questionSequence: String = buildString {
         append('~')
