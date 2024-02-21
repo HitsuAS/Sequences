@@ -48,6 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sequences.model.Question
@@ -155,9 +156,12 @@ fun WelcomeAndChooseQuantityScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.weight(1.2f))
-        Text(text = "Welcome")
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.weight(0.9f))
+        Text(
+            text = "Welcome",
+            style = MaterialTheme.typography.displayLarge
+        )
+        Spacer(modifier = Modifier.weight(0.1f))
         Text(text = "How many questions do you want?")
         OutlinedTextField(
             label = { Text(text = "Quantity") },
@@ -196,6 +200,7 @@ fun QuestionsScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.weight(1.5f))
         when (isChosen) {
             false -> ChooseDifficultyScreen(
                 value = difficultyInput,
@@ -219,6 +224,7 @@ fun QuestionsScreen(
                 onShowResultsClick = onShowResultsClick
             )
         }
+        Spacer(modifier = Modifier.weight(2f))
     }
 }
 
@@ -236,7 +242,10 @@ fun ChooseDifficultyScreen(
         if(isValid) onClick()
     }
 
-    Text(text = "Choose difficulty (The length of the sequence):")
+    Text(
+        text = "Choose difficulty (The length of the sequence):",
+        textAlign = TextAlign.Center
+    )
     OutlinedTextField(
         label = { Text(text = "Difficulty") },
         value = value,

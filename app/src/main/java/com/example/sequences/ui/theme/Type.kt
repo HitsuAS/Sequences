@@ -28,6 +28,11 @@ val Typography = Typography(
         fontFamily = KodeMono,
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp
+    ),
+    displayLarge = TextStyle(
+        fontFamily = FontFamily.Cursive,
+        fontWeight = FontWeight.Bold,
+        fontSize = 80.sp
     )
     /* Other default text styles to override
     titleLarge = TextStyle(
