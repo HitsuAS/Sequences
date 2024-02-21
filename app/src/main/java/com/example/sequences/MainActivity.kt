@@ -7,6 +7,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -289,7 +290,11 @@ fun QuestionScreen(
     Text(text = "How many ${question.questionType} numbers in this sequence?")
     Text(
         text = question.questionSequence,
-        modifier = Modifier.horizontalScroll(scrollState)
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier
+            .padding(horizontal = 4.dp, vertical = 8.dp)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .horizontalScroll(scrollState)
     )
     if(isScrollable) Text(text = "The sequence is scrollable")
     OutlinedTextField(
@@ -365,7 +370,11 @@ fun QuestionResultCard(question: Question) {
                     Text(text = "${question.questionType} Numbers:")
                     Text(
                         text = question.questionSequence,
-                        modifier = Modifier.horizontalScroll(scrollState)
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp, vertical = 8.dp)
+                            .background(MaterialTheme.colorScheme.secondaryContainer)
+                            .horizontalScroll(scrollState)
                     )
                     if(isScrollable) Text(text = "The sequence is scrollable")
                     Text(text = "Your answer is: ${Storage.answers[question.questionNum]}")
