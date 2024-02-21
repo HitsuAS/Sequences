@@ -75,13 +75,11 @@ fun SequencesGame(modifier: Modifier = Modifier) {
 
     Scaffold(
         topBar = {
-            SequencesTopAppBar(
-                label = when(currentPage) {
-                    0 -> "Sequences"
-                    1 -> "Question ${questionNum + 1}/$quantity"
-                    else -> "Results"
-                }
-            )
+            when(currentPage) {
+                0 -> SequencesTopAppBar(label = "Sequences", showLogo = true)
+                1 -> SequencesTopAppBar(label = "Question ${questionNum + 1}/$quantity")
+                else -> SequencesTopAppBar(label = "Results")
+            }
         }
     ) {contentPadding ->
         Surface(
@@ -116,18 +114,19 @@ fun SequencesGame(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SequencesTopAppBar(label: String) {
+fun SequencesTopAppBar(label: String, showLogo: Boolean = false) {
     CenterAlignedTopAppBar(
         title = {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    modifier = Modifier
-                        .size(64.dp),
-                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                    contentDescription = null
-                )
+                if(showLogo) {
+                    Image(
+                        modifier = Modifier.size(64.dp),
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = null
+                    )
+                }
                 Text(text = label)
             }
         },
@@ -155,6 +154,7 @@ fun WelcomeAndChooseQuantityScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.weight(1.2f))
         Text(text = "Welcome")
         Spacer(modifier = Modifier.height(28.dp))
         Text(text = "How many questions do you want?")
@@ -174,6 +174,7 @@ fun WelcomeAndChooseQuantityScreen(
         Button(onClick = onContinueClick) {
             Text(text = "Continue")
         }
+        Spacer(modifier = Modifier.weight(2f))
     }
 }
 
