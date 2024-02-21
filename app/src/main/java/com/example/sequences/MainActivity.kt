@@ -125,7 +125,7 @@ fun SequencesTopAppBar(label: String) {
                 Image(
                     modifier = Modifier
                         .size(64.dp),
-                    painter = painterResource(id = R.drawable.sequences_logo),
+                    painter = painterResource(id = R.mipmap.ic_launcher_foreground),
                     contentDescription = null
                 )
                 Text(text = label)
