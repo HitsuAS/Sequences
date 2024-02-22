@@ -3,6 +3,7 @@ package com.example.sequences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -45,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -356,8 +359,15 @@ fun QuestionResultCard(question: Question) {
     val scrollState = rememberScrollState()
     val isScrollable = scrollState.canScrollForward || scrollState.canScrollBackward
 
+    val color by animateColorAsState(
+        targetValue = if (isExpanded) Color(0xFFDAF1DD)
+        else MaterialTheme.colorScheme.secondaryContainer,
+        label = ""
+    )
+
     Card(
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = color)
     ) {
         Row(
             modifier = Modifier
@@ -390,7 +400,6 @@ fun QuestionResultCard(question: Question) {
                     Text(text = "The answer is: ${question.answer}")
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = { isExpanded = !isExpanded }) {
                 Icon(
                     imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
