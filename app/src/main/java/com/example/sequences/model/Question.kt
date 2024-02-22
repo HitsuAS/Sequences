@@ -47,7 +47,7 @@ fun Int.isEven() = this % 2 == 0
 fun Int.isOdd() = this % 2 != 0
 fun Int.isPrime() : Boolean {
     if(this < 2 ) return false
-    for(i in 2 until sqrt(this.toFloat()).toInt()){
+    for(i in 2..sqrt(this.toFloat()).toInt()){
         if(this % i == 0) return false
     }
     return true
