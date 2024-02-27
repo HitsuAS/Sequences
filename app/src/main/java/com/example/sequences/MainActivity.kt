@@ -55,7 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.sequences.model.Question
-import com.example.sequences.model.Storage
+import com.example.sequences.data.Storage
 import com.example.sequences.ui.theme.SequencesTheme
 
 class MainActivity : ComponentActivity() {
@@ -346,7 +346,7 @@ fun ResultsScreen() {
     LazyColumn(
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        items(Storage.questions) {question ->
+        items(Storage.questions) { question ->
             QuestionResultCard(question = question)
         }
     }
