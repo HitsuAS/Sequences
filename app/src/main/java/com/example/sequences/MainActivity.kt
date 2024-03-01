@@ -40,8 +40,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,8 +54,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.sequences.model.Question
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sequences.data.Storage
+import com.example.sequences.model.Question
+import com.example.sequences.ui.SequencesViewModel
 import com.example.sequences.ui.theme.SequencesTheme
 
 class MainActivity : ComponentActivity() {
@@ -70,45 +72,52 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun SequencesGame(modifier: Modifier = Modifier) {
-    var currentPage by remember { mutableIntStateOf(0) }
+fun SequencesGame(
+    modifier: Modifier = Modifier,
+    sequencesViewModel: SequencesViewModel = viewModel()
+) {
 
-    var quantityInput by remember { mutableStateOf("") }
-    var quantity = 0
-
-    var questionNum by remember { mutableIntStateOf(0) }
+    val sequencesUiState by sequencesViewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            when(currentPage) {
+            when(sequencesUiState.currentPage) {
                 0 -> SequencesTopAppBar(label = "Sequences", showLogo = true)
-                1 -> SequencesTopAppBar(label = "Question ${questionNum + 1}/$quantity")
+                1 -> SequencesTopAppBar(
+                    label = "Question ${sequencesUiState.currentQuestionNumber + 1}/${sequencesUiState.questionsQuantity}"
+                )
                 else -> SequencesTopAppBar(label = "Results")
             }
         }
-    ) {contentPadding ->
+    ) { contentPadding ->
         Surface(
             modifier = modifier
                 .fillMaxSize()
                 .padding(contentPadding),
             color = MaterialTheme.colorScheme.background
         ) {
-            when (currentPage) {
+            when (sequencesUiState.currentPage) {
                 0 -> WelcomeAndChooseQuantityScreen(
-                    value = quantityInput,
-                    onValueChange = { quantityInput = it },
-                    onClick = {
-                        quantity = quantityInput.toInt()
-                        currentPage++
-                    },
-                    validateQuantity = { quantityInput.toIntOrNull() != null && quantityInput.toInt() > 0 }
+                    value = sequencesViewModel.quantityInput,
+                    onValueChange = { sequencesViewModel.updateQuantityInput(it) },
+                    onClick = { sequencesViewModel.onContinueClick() },
+                    isValid = sequencesUiState.isValueValid
                 )
 
                 1 -> QuestionsScreen(
-                    quantity = quantity,
-                    questionNum = questionNum,
-                    questionNumAdd = { questionNum++ },
-                    onShowResultsClick = { currentPage++ }
+                    questionNum = sequencesUiState.currentQuestionNumber,
+                    isChosen = sequencesUiState.isDifficultyChosen,
+                    isValueValid = sequencesUiState.isValueValid,
+                    difficultyInput = sequencesViewModel.difficultyInput,
+                    updateDifficulty = { sequencesViewModel.updateDifficulty(it) },
+                    onStartClick = { sequencesViewModel.onStartClick() },
+                    answerInput = sequencesViewModel.answerInput,
+                    updateAnswer = { sequencesViewModel.updateAnswer(it) },
+                    isAnswered = sequencesUiState.isAnswered,
+                    onSubmitClick = { sequencesViewModel.onSubmitClick() },
+                    onNextClick = { sequencesViewModel.onNextClick() },
+                    isLastQuestion = sequencesUiState.isLastQuestion,
+                    onShowResultsClick = { sequencesViewModel.goToNextPage() }
                 )
 
                 2 -> ResultsScreen()
@@ -144,16 +153,9 @@ fun WelcomeAndChooseQuantityScreen(
     value: String,
     onValueChange: (String) -> Unit,
     onClick: () -> Unit,
-    validateQuantity: () -> Boolean,
+    isValid: Boolean,
     modifier: Modifier = Modifier
 ) {
-    var isValid by remember { mutableStateOf(true) }
-
-    val onContinueClick = {
-        isValid = validateQuantity()
-        if (isValid) onClick()
-    }
-
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -175,11 +177,11 @@ fun WelcomeAndChooseQuantityScreen(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
             ),
-            keyboardActions = KeyboardActions(onDone = { onContinueClick() }),
+            keyboardActions = KeyboardActions(onDone = { onClick() }),
             isError = !isValid,
             supportingText = { if(!isValid) Text(text = "Invalid Input. Value must be greater than 0") }
         )
-        Button(onClick = onContinueClick) {
+        Button(onClick = onClick) {
             Text(text = "Continue")
         }
         Spacer(modifier = Modifier.weight(2f))
@@ -188,16 +190,20 @@ fun WelcomeAndChooseQuantityScreen(
 
 @Composable
 fun QuestionsScreen(
-    quantity: Int,
     questionNum: Int,
-    questionNumAdd: () -> Unit,
+    isChosen: Boolean,
+    isValueValid: Boolean,
+    difficultyInput: String,
+    updateDifficulty: (String) -> Unit,
+    onStartClick: () -> Unit,
+    answerInput: String,
+    updateAnswer: (String) -> Unit,
+    isAnswered: Boolean,
+    onSubmitClick: () -> Unit,
+    onNextClick: () -> Unit,
+    isLastQuestion: Boolean,
     onShowResultsClick: () -> Unit
 ) {
-    var isChosen by remember { mutableStateOf(false) }
-
-    var difficultyInput by remember { mutableStateOf("") }
-    var difficulty: Int
-
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -207,23 +213,19 @@ fun QuestionsScreen(
         when (isChosen) {
             false -> ChooseDifficultyScreen(
                 value = difficultyInput,
-                onValueChange = { difficultyInput = it },
-                validateDifficulty = { difficultyInput.toIntOrNull() != null && difficultyInput.toInt() > 2 },
-                onClick = {
-                    difficulty = difficultyInput.toInt()
-                    Storage.questions.add(Question(difficulty = difficulty, questionNum = questionNum))
-                    isChosen = true
-                }
+                onValueChange = updateDifficulty,
+                isValid = isValueValid,
+                onClick = onStartClick
             )
             true -> QuestionScreen(
                 question = Storage.questions[questionNum],
-                isLastQuestion = questionNum == quantity - 1,
-                onNextClick = {
-                    questionNumAdd()
-                    difficultyInput = ""
-                    difficulty = 0
-                    isChosen = false
-                },
+                value = answerInput,
+                onValueChange = updateAnswer,
+                isValid = isValueValid,
+                isAnswered = isAnswered,
+                onSubmitClick = onSubmitClick,
+                isLastQuestion = isLastQuestion,
+                onNextClick = onNextClick,
                 onShowResultsClick = onShowResultsClick
             )
         }
@@ -235,16 +237,9 @@ fun QuestionsScreen(
 fun ChooseDifficultyScreen(
     value: String,
     onValueChange: (String) -> Unit,
-    validateDifficulty: () -> Boolean,
+    isValid: Boolean,
     onClick: () -> Unit
 ) {
-    var isValid by remember { mutableStateOf(true) }
-
-    val onStartClick = {
-        isValid = validateDifficulty()
-        if(isValid) onClick()
-    }
-
     Text(
         text = "Choose difficulty (The length of the sequence):",
         textAlign = TextAlign.Center
@@ -258,11 +253,11 @@ fun ChooseDifficultyScreen(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
         ),
-        keyboardActions = KeyboardActions(onDone = { onStartClick() }),
+        keyboardActions = KeyboardActions(onDone = { onClick() }),
         isError = !isValid,
         supportingText = { if(!isValid) Text(text = "Invalid Input. Value should be greater than 2") }
     )
-    Button(onClick = onStartClick) {
+    Button(onClick = onClick) {
         Text(text = "Start")
     }
 }
@@ -270,34 +265,17 @@ fun ChooseDifficultyScreen(
 @Composable
 fun QuestionScreen(
     question: Question,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isValid: Boolean,
+    isAnswered: Boolean,
+    onSubmitClick: () -> Unit,
     isLastQuestion: Boolean,
     onNextClick: () -> Unit,
     onShowResultsClick: () -> Unit
 ) {
-    var answerInput by remember { mutableStateOf("") }
-    var answer: Int
-
-    var isValid by remember { mutableStateOf(true) }
-
     val scrollState = rememberScrollState()
     val isScrollable = scrollState.canScrollForward || scrollState.canScrollBackward
-
-    var isAnswered by remember { mutableStateOf(false) }
-
-    val onSubmitClick = {
-        isValid = (answerInput.toIntOrNull() != null && answerInput.toInt() > -1)
-        if(isValid) {
-            answer = answerInput.toInt()
-            isAnswered = true
-            Storage.answers.add(answer)
-        }
-    }
-
-    val onNextQuestionClick = {
-        onNextClick()
-        answerInput = ""
-        answer = 0
-    }
 
     Text(text = "How many ${question.questionType} numbers in this sequence?")
     Text(
@@ -311,8 +289,8 @@ fun QuestionScreen(
     if(isScrollable) Text(text = "The sequence is scrollable")
     OutlinedTextField(
         label = { Text(text = "Answer") },
-        value = answerInput,
-        onValueChange = { answerInput = it },
+        value = value,
+        onValueChange = onValueChange,
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
@@ -331,7 +309,7 @@ fun QuestionScreen(
         Text(text = "The answer is: ${question.answer}")
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = if(isLastQuestion) onShowResultsClick else onNextQuestionClick
+            onClick = if(isLastQuestion) onShowResultsClick else onNextClick
         ) {
             Text(
                 text = if (isLastQuestion) "Show Results" else "Next Question"
@@ -342,7 +320,6 @@ fun QuestionScreen(
 
 @Composable
 fun ResultsScreen() {
-
     LazyColumn(
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
