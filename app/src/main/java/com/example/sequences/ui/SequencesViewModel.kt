@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.sequences.data.SequencesUiState
+import com.example.sequences.model.SequencesUiState
 import com.example.sequences.data.Storage
 import com.example.sequences.model.Question
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,21 +30,24 @@ class SequencesViewModel : ViewModel() {
         resetGame()
     }
 
-    private fun resetGame() {
+    fun resetGame() {
         Storage.questions.clear()
         Storage.answers.clear()
         _uiState.value = SequencesUiState()
+        quantityInput = ""
+        difficultyInput = ""
+        answerInput = ""
     }
 
-    fun topAppBarPhrase(): String {
-        return when(_uiState.value.currentPage) {
+    fun topAppBarPhrase(currentPage: Int): String {
+        return when(currentPage) {
             0 -> "Sequences"
             1 -> "Question ${_uiState.value.currentQuestionNumber + 1}/${_uiState.value.questionsQuantity}"
             else -> "Results"
         }
     }
 
-    fun goToNextPage() {
+    private fun goToNextPage() {
         _uiState.update { currentState ->
             currentState.copy(currentPage = currentState.currentPage.plus(1))
         }
@@ -64,6 +67,11 @@ class SequencesViewModel : ViewModel() {
         if(validateQuantity()) {
             setQuantity()
             goToNextPage()
+            if(_uiState.value.questionsQuantity == 1) {
+                _uiState.update { currentState ->
+                    currentState.copy(isLastQuestion = true)
+                }
+            }
         } else {
             _uiState.update { currentState ->
                 currentState.copy(isValueValid = false)
@@ -128,4 +136,8 @@ class SequencesViewModel : ViewModel() {
     }
 
     private fun validateAnswer(): Boolean = answerInput.toIntOrNull() != null && answerInput.toInt() > -1
+
+    fun onShowResultsClick() {
+        goToNextPage()
+    }
 }

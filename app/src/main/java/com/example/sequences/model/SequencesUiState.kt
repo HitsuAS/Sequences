@@ -1,4 +1,4 @@
-package com.example.sequences.data
+package com.example.sequences.model
 
 data class SequencesUiState(
     val currentPage: Int = 0,
